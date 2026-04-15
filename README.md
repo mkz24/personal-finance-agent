@@ -1,8 +1,8 @@
-# 💰 Personal Finance Agent
+#  Personal Finance Agent
 
 A smart multi-agent web app that reads your real bank statements (PDF or CSV) and returns a full financial report — powered by Google Gemini AI and built with Streamlit.
 
-## 🤖 Agents
+##  Agents
 
 | Agent | Role |
 |---|---|
@@ -12,7 +12,7 @@ A smart multi-agent web app that reads your real bank statements (PDF or CSV) an
 | **CriticAgent** | AI-powered risk review + chat Q&A via Gemini |
 | **ControllerAgent** | Orchestrates all agents via natural-language commands |
 
-## 🚀 Quick Start
+##  Quick Start
 
 ```bash
 pip install -r requirements.txt
@@ -21,19 +21,18 @@ streamlit run app.py
 
 Open [http://localhost:8501](http://localhost:8501)
 
-## ☁️ Run in Google Colab
+##  Run in Google Colab
 
 Open `personal_finance_agent_colab.ipynb` in Google Colab for a no-install cloud version using ngrok.
 
-## 📄 Sample Data
+##  Sample Data
 
 Try `sample.csv` to test the app without a real bank statement.
 
-## 🔑 Requirements
+##  Requirements
 
 - Python 3.9+
 - Google Gemini API key (free at [aistudio.google.com](https://aistudio.google.com/app/apikey))
 - Supports: Chase, Bank of America, Wells Fargo, Navy Federal, Citi, Capital One PDFs & CSVs
 
----
-*CIS 4394 – Multi-Agent Finance App*
+
