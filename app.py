@@ -9,8 +9,11 @@ from difflib import get_close_matches
 import google.generativeai as genai
 import fitz  # pymupdf — no external engine needed
 
-# ---- Load .env file (local development) ----
+# ---- Load .env file and configure Gemini silently ----
 load_dotenv()
+gemini_key = os.getenv("GEMINI_API_KEY", "")
+if gemini_key:
+    genai.configure(api_key=gemini_key)
 
 # ---- Page setup ----
 st.set_page_config(page_title="Finance Agent", layout="wide")
@@ -24,24 +27,6 @@ st.info(
     "Supports both **digital PDFs** and **scanned/image-based PDFs** (via PyMuPDF). \n"
     "The agent automatically detects your transaction columns — no reformatting needed."
 )
-
-# ---- Gemini API Key (sidebar) ----
-with st.sidebar:
-    st.header("🤖 AI Settings")
-    env_key = os.getenv("GEMINI_API_KEY", "")
-    gemini_key = st.text_input(
-        "Google Gemini API Key",
-        value=env_key,
-        type="password",
-        placeholder="Paste your Gemini API key here",
-        help="Get a free key at https://aistudio.google.com/app/apikey"
-    )
-    st.caption("Your key is never stored or sent anywhere except Google's API.")
-    if gemini_key:
-        genai.configure(api_key=gemini_key)
-        st.success("✅ Gemini connected!")
-    else:
-        st.warning("⚠️ Add your Gemini key to unlock the AI Critic.")
 
 # ---- Session state ----
 for key in ["df", "analyzed_df", "summary", "plan", "critique", "chat_history"]:
@@ -393,7 +378,7 @@ class CriticAgent:
 
     def ask_ai(self, question, df, api_key):
         if not api_key:
-            return "❌ Please add your Gemini API key in the sidebar to use the AI Critic."
+            return "❌ Gemini API key not found. Make sure your .env file has GEMINI_API_KEY set."
 
         if df is not None and not df.empty:
             if "Account" in df.columns:
