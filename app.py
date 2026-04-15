@@ -17,8 +17,7 @@ if gemini_key:
 
 # ---- Page config ----
 st.set_page_config(
-    page_title="💰 Personal Finance Agent",
-    page_icon="💰",
+    page_title=" Personal Finance Agent",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -231,7 +230,7 @@ def pymupdf_extract_text(file_bytes):
         doc.close()
         return full_text if full_text.strip() else None
     except Exception as e:
-        st.warning(f"⚠️ PyMuPDF extraction failed: {e}")
+        st.warning(f" PyMuPDF extraction failed: {e}")
         return None
 
 def parse_text_to_transactions(text):
@@ -312,9 +311,9 @@ def parse_pdf_statement(uploaded_file):
     if mupdf_text:
         rows = parse_text_to_transactions(mupdf_text)
         if rows:
-            st.success("✅ PyMuPDF extracted transactions!")
+            st.success(" PyMuPDF extracted transactions!")
             return pd.DataFrame(rows)
-    st.error("❌ Could not extract transactions. Try downloading a fresh PDF from your bank.")
+    st.error(" Could not extract transactions. Try downloading a fresh PDF from your bank.")
     return None
 
 # ============================================================
@@ -325,15 +324,15 @@ class DataFetchAgent:
     def fetch_data(self, uploaded_file):
         fname = uploaded_file.name.lower()
         if fname.endswith(".pdf"):
-            with st.spinner("📄 Parsing PDF bank statement..."):
+            with st.spinner(" Parsing PDF bank statement..."):
                 df = parse_pdf_statement(uploaded_file)
             if df is None or df.empty:
-                st.error("❌ Could not extract transactions. Try downloading directly from your bank.")
+                st.error(" Could not extract transactions. Try downloading directly from your bank.")
                 return None
-            st.success(f"✅ PDF parsed! Found **{len(df)} transactions**.")
+            st.success(f" PDF parsed! Found **{len(df)} transactions**.")
         else:
             df = pd.read_csv(uploaded_file)
-            st.success(f"✅ CSV loaded! Found **{len(df)} rows**.")
+            st.success(f" CSV loaded! Found **{len(df)} rows**.")
 
         if fname.endswith(".pdf") and "Amount" in df.columns:
             st.session_state.df = df
@@ -373,7 +372,7 @@ class DataFetchAgent:
         df = df.rename(columns=rename_map)
 
         if "Amount" not in df.columns or "Description" not in df.columns:
-            st.error("❌ Could not find Amount/Description columns.")
+            st.error(" Could not find Amount/Description columns.")
             return None
 
         df["Amount"] = pd.to_numeric(
@@ -447,14 +446,14 @@ class CriticAgent:
             income    = df.loc[df["Amount"] > 0, "Amount"].sum()
         net = income - total_exp
         risks = []
-        if total_exp > 20000: risks.append("⚠️ **High expenses detected** — review your biggest categories.")
-        if income == 0:       risks.append("⚠️ **No income rows found** — make sure deposits are included.")
-        if net < 0:           risks.append(f"🚨 **Negative net (${net:,.2f})** — you're spending more than you earn!")
-        return "\n\n".join(risks) if risks else "✅ **Plan looks solid!** No major risks detected."
+        if total_exp > 20000: risks.append(" **High expenses detected** — review your biggest categories.")
+        if income == 0:       risks.append(" **No income rows found** — make sure deposits are included.")
+        if net < 0:           risks.append(f" **Negative net (${net:,.2f})** — you're spending more than you earn!")
+        return "\n\n".join(risks) if risks else " **Plan looks solid!** No major risks detected."
 
     def ask_ai(self, question, df, api_key):
         if not api_key:
-            return "❌ Gemini API key not found. Add GEMINI_API_KEY to your .env file."
+            return " Gemini API key not found. Add GEMINI_API_KEY to your .env file."
         if df is not None and not df.empty:
             if "Account" in df.columns:
                 income   = df.loc[df["Account"].str.lower() == "income",   "Amount"].sum()
@@ -481,7 +480,7 @@ class CriticAgent:
             model = genai.GenerativeModel("gemini-2.0-flash")
             return model.generate_content(prompt).text
         except Exception as e:
-            return f"❌ Gemini error: {str(e)}"
+            return f" Gemini error: {str(e)}"
 
 
 # ---- Instantiate agents ----
@@ -504,14 +503,14 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("### 📋 How It Works")
+    st.markdown("###  How It Works")
 
     steps = [
-        ("1️⃣", "Upload your bank statement (PDF or CSV)", st.session_state.df is not None),
-        ("2️⃣", "Click Analyze to see income vs. expenses", st.session_state.analyzed_df is not None),
-        ("3️⃣", "Click Plan to get a savings strategy", st.session_state.plan is not None),
-        ("4️⃣", "Click Critique to spot financial risks", st.session_state.critique is not None),
-        ("5️⃣", "Ask the AI Critic anything about your finances", False),
+        ("Upload your bank statement (PDF or CSV)", st.session_state.df is not None),
+        ("Click Analyze to see income vs. expenses", st.session_state.analyzed_df is not None),
+        ("Click Plan to get a savings strategy", st.session_state.plan is not None),
+        ("Click Critique to spot financial risks", st.session_state.critique is not None),
+        ("Ask the AI Critic anything about your finances", False),
     ]
     for icon, text, done in steps:
         cls = "done" if done else ""
@@ -521,7 +520,7 @@ with st.sidebar:
         )
 
     st.markdown("---")
-    st.markdown("### 🏦 Supported Banks")
+    st.markdown("###Supported Banks")
     st.markdown("""
     - Chase &nbsp;•&nbsp; Bank of America
     - Wells Fargo &nbsp;•&nbsp; Citi
@@ -545,13 +544,13 @@ with st.sidebar:
 # Hero Banner
 st.markdown("""
 <div class="hero-banner">
-    <h1>💰 Personal Finance Agent</h1>
+    <h1> Personal Finance Agent</h1>
     <p>Upload your bank statement · Get AI-powered insights · Take control of your money</p>
 </div>
 """, unsafe_allow_html=True)
 
 # ---- SECTION 1: Upload ----
-st.markdown('<div class="section-header"><span>📁 Step 1 — Upload Your Bank Statement</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="section-header"><span> Step 1 — Upload Your Bank Statement</span></div>', unsafe_allow_html=True)
 
 upload_col, info_col = st.columns([2, 1])
 with upload_col:
@@ -563,17 +562,17 @@ with upload_col:
 with info_col:
     st.markdown("""
     <div class="result-card">
-        <h4>✅ Supported Formats</h4>
-        <p>📄 <b>PDF</b> — Direct bank export<br>
-        📊 <b>CSV</b> — Any bank statement<br>
-        🔒 Data stays on your machine</p>
+        <h4> Supported Formats</h4>
+        <p> <b>PDF</b> — Direct bank export<br>
+         <b>CSV</b> — Any bank statement<br>
+         Data stays on your machine</p>
     </div>
     """, unsafe_allow_html=True)
 
 if uploaded is not None:
     df_result = fetcher.fetch_data(uploaded)
     if df_result is not None:
-        st.markdown("**📊 Preview (first 10 rows):**")
+        st.markdown("** Preview (first 10 rows):**")
         st.dataframe(df_result.head(10), use_container_width=True, height=280)
 
 # ---- SECTION 2: Run Agents ----
@@ -590,7 +589,7 @@ with btn_col1:
     """, unsafe_allow_html=True)
     if st.button("▶ Run Analyze", use_container_width=True, key="btn_analyze"):
         if st.session_state.df is None:
-            st.warning("⚠️ Upload a file first!")
+            st.warning(" Upload a file first!")
         else:
             with st.spinner("🔍 Analyzing your finances..."):
                 summary, analyzed_df, inc, exp, net = analyzer.analyze(st.session_state.df)
@@ -599,7 +598,7 @@ with btn_col1:
             st.session_state.income_val   = inc
             st.session_state.expense_val  = exp
             st.session_state.net_val      = net
-            st.success("✅ Analysis complete!")
+            st.success(" Analysis complete!")
 
 with btn_col2:
     st.markdown("""
@@ -610,11 +609,11 @@ with btn_col2:
     """, unsafe_allow_html=True)
     if st.button("▶ Run Plan", use_container_width=True, key="btn_plan"):
         if st.session_state.analyzed_df is None:
-            st.warning("⚠️ Run Analyze first!")
+            st.warning(" Run Analyze first!")
         else:
             with st.spinner("📈 Building your plan..."):
                 st.session_state.plan = planner.plan(st.session_state.analyzed_df)
-            st.success("✅ Plan ready!")
+            st.success(" Plan ready!")
 
 with btn_col3:
     st.markdown("""
@@ -625,16 +624,16 @@ with btn_col3:
     """, unsafe_allow_html=True)
     if st.button("▶ Run Critique", use_container_width=True, key="btn_critique"):
         if st.session_state.analyzed_df is None:
-            st.warning("⚠️ Run Analyze first!")
+            st.warning(" Run Analyze first!")
         else:
             with st.spinner("🧐 Reviewing your plan..."):
                 st.session_state.critique = critic.critique(
                     st.session_state.plan or "", st.session_state.analyzed_df
                 )
-            st.success("✅ Critique ready!")
+            st.success(" Critique ready!")
 
 # ---- SECTION 3: Results ----
-st.markdown('<div class="section-header"><span>📊 Step 3 — Your Results</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="section-header"><span> Step 3 — Your Results</span></div>', unsafe_allow_html=True)
 
 # Metric Cards
 if st.session_state.income_val is not None:
@@ -646,11 +645,11 @@ if st.session_state.income_val is not None:
     st.markdown(f"""
     <div class="metric-row">
         <div class="metric-card income">
-            <div class="label">💚 Total Income</div>
+            <div class="label"> Total Income</div>
             <div class="value">${inc:,.0f}</div>
         </div>
         <div class="metric-card expense">
-            <div class="label">🔴 Total Expenses</div>
+            <div class="label"> Total Expenses</div>
             <div class="value">${exp:,.0f}</div>
         </div>
         <div class="metric-card {net_class}">
@@ -671,7 +670,7 @@ if any([
 
     with tab1:
         if st.session_state.summary:
-            st.markdown('<div class="result-card"><h4>📋 Expense Breakdown by Category</h4>', unsafe_allow_html=True)
+            st.markdown('<div class="result-card"><h4> Expense Breakdown by Category</h4>', unsafe_allow_html=True)
             st.markdown(st.session_state.summary)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
@@ -679,7 +678,7 @@ if any([
 
     with tab2:
         if st.session_state.plan:
-            st.markdown('<div class="result-card"><h4>📈 Your Financial Plan</h4>', unsafe_allow_html=True)
+            st.markdown('<div class="result-card"><h4> Your Financial Plan</h4>', unsafe_allow_html=True)
             st.markdown(st.session_state.plan)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
@@ -687,7 +686,7 @@ if any([
 
     with tab3:
         if st.session_state.critique:
-            st.markdown('<div class="result-card"><h4>🧐 Risk Assessment</h4>', unsafe_allow_html=True)
+            st.markdown('<div class="result-card"><h4> Risk Assessment</h4>', unsafe_allow_html=True)
             st.markdown(st.session_state.critique)
             st.markdown('</div>', unsafe_allow_html=True)
         else:
@@ -700,7 +699,7 @@ if any([
             st.info("Run **Analyze** to see the full processed data table.")
 
 # ---- SECTION 4: AI Chat ----
-st.markdown('<div class="section-header"><span>🤖 Step 4 — Ask the AI Finance Advisor</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="section-header"><span> Step 4 — Ask the AI Finance Advisor</span></div>', unsafe_allow_html=True)
 
 st.markdown("""
 <div class="result-card" style="margin-bottom:1rem;">
@@ -715,13 +714,13 @@ with chat_container:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-user_q = st.chat_input("💬 Ask me anything... e.g. 'Why are my expenses so high?' or 'How do I save $500/month?'")
+user_q = st.chat_input(" Ask me anything... e.g. 'Why are my expenses so high?' or 'How do I save $500/month?'")
 if user_q:
     st.session_state.chat_history.append({"role": "user", "content": user_q})
     with st.chat_message("user"):
         st.markdown(user_q)
     with st.chat_message("assistant"):
-        with st.spinner("🤖 Thinking..."):
+        with st.spinner(" Thinking..."):
             active_df = st.session_state.analyzed_df if st.session_state.analyzed_df is not None else st.session_state.df
             answer = critic.ask_ai(user_q, active_df, gemini_key)
         st.markdown(answer)
