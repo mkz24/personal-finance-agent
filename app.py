@@ -473,7 +473,6 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### How It Works")
 
-    # FIX: each tuple now has exactly 3 values (icon, text, done)
     steps = [
         ("1.", "Upload your bank statement (PDF or CSV)", st.session_state.df is not None),
         ("2.", "Click Analyze to see income vs. expenses", st.session_state.analyzed_df is not None),
@@ -502,9 +501,6 @@ with st.sidebar:
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.caption("CIS 4394 - Multi-Agent Finance App")
 
 # ============================================================
 # MAIN CONTENT
@@ -685,5 +681,3 @@ if user_q:
             answer = critic.ask_ai(user_q, active_df, gemini_key)
         st.markdown(answer)
     st.session_state.chat_history.append({"role": "assistant", "content": answer})
-
-st.caption("CIS 4394 - Multi-Agent Finance App")
