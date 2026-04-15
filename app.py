@@ -3,9 +3,14 @@ import pandas as pd
 import pdfplumber
 import re
 import io
+import os
+from dotenv import load_dotenv
 from difflib import get_close_matches
 import google.generativeai as genai
 import fitz  # pymupdf — no external engine needed
+
+# ---- Load .env file (local development) ----
+load_dotenv()
 
 # ---- Page setup ----
 st.set_page_config(page_title="Finance Agent", layout="wide")
@@ -23,8 +28,10 @@ st.info(
 # ---- Gemini API Key (sidebar) ----
 with st.sidebar:
     st.header("🤖 AI Settings")
+    env_key = os.getenv("GEMINI_API_KEY", "")
     gemini_key = st.text_input(
         "Google Gemini API Key",
+        value=env_key,
         type="password",
         placeholder="Paste your Gemini API key here",
         help="Get a free key at https://aistudio.google.com/app/apikey"
@@ -48,13 +55,6 @@ if st.session_state.chat_history is None:
 # ============================================================
 
 def clean_amount(raw):
-    """
-    Convert bank amount strings to signed floats.
-    Handles:
-    - Standard negatives: '-23.43' or '($23.43)'
-    - Navy Federal style: '23.43-' (minus at end)
-    - Plain positives: '418.00'
-    """
     if raw is None:
         return None
     s = str(raw).strip().replace(',', '').replace('$', '').replace(' ', '')
@@ -69,11 +69,6 @@ def clean_amount(raw):
         return None
 
 def pymupdf_extract_text(file_bytes):
-    """
-    Extract all text from a PDF using PyMuPDF (fitz).
-    Works on both digital and image-based PDFs.
-    No external engine required.
-    """
     try:
         doc = fitz.open(stream=file_bytes, filetype="pdf")
         full_text = ""
@@ -86,10 +81,6 @@ def pymupdf_extract_text(file_bytes):
         return None
 
 def parse_text_to_transactions(text):
-    """
-    Parse raw text into transaction rows using regex.
-    Handles multiple date formats and amount styles.
-    """
     rows = []
     date_pat = r'(\d{1,2}[/\-]\d{1,2}(?:[/\-]\d{2,4})?|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2})'
     money_pat = r'(-?\$?[\d,]+\.\d{2}-?)'
@@ -113,7 +104,6 @@ def parse_text_to_transactions(text):
     return rows
 
 def is_text_pdf(file_bytes):
-    """Check if a PDF has real embedded text (not just images)."""
     with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
         for page in pdf.pages:
             text = page.extract_text() or ""
@@ -126,20 +116,9 @@ def is_text_pdf(file_bytes):
 # ============================================================
 
 def parse_pdf_statement(uploaded_file):
-    """
-    Extract transactions from any PDF bank statement.
-
-    Strategy 1 — Structured table extraction (digital PDFs with tables)
-    Strategy 2 — pdfplumber line-by-line regex (digital PDFs, no tables)
-    Strategy 3 — PyMuPDF text extraction (image/scanned PDFs, no extra install)
-
-    Returns a cleaned DataFrame with columns:
-    Date | Description | Amount | Balance
-    """
     rows = []
     file_bytes = uploaded_file.read()
 
-    # STRATEGY 1 — structured table extraction
     with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
         for page in pdf.pages:
             tables = page.extract_tables()
@@ -203,7 +182,6 @@ def parse_pdf_statement(uploaded_file):
         df["Balance"] = pd.to_numeric(df["Balance"], errors="coerce")
         return df
 
-    # STRATEGY 2 — pdfplumber line-by-line
     if is_text_pdf(file_bytes):
         st.info("📝 No tables found — trying line-by-line text parser...")
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
@@ -214,7 +192,6 @@ def parse_pdf_statement(uploaded_file):
         if rows:
             return pd.DataFrame(rows)
 
-    # STRATEGY 3 — PyMuPDF
     st.info("📄 Trying PyMuPDF deep text extraction (no install required)...")
     mupdf_text = pymupdf_extract_text(file_bytes)
     if mupdf_text:
@@ -235,7 +212,6 @@ def parse_pdf_statement(uploaded_file):
 # ============================================================
 
 class DataFetchAgent:
-    """Data Fetch Agent – loads & normalises CSV or PDF bank statements."""
     def fetch_data(self, uploaded_file):
         filename = uploaded_file.name.lower()
         if filename.endswith(".pdf"):
@@ -321,7 +297,6 @@ class DataFetchAgent:
 
 
 class AnalyzerAgent:
-    """Analyzer Agent – computes income, expenses, and category breakdown."""
     def analyze(self, df):
         if df is None or df.empty:
             return "No data loaded yet. Upload a file first.", None
@@ -364,7 +339,6 @@ class AnalyzerAgent:
 
 
 class PlannerAgent:
-    """Planner Agent – generates a simple budget plan."""
     def plan(self, df):
         if df is None or df.empty:
             return "Run Analyze first so I can see your spending."
@@ -390,12 +364,6 @@ class PlannerAgent:
 
 
 class CriticAgent:
-    """
-    Agent 4 – AI-powered knowledge agent.
-    - Auto-critique: flags risks in the financial data.
-    - Q&A chat: answers any finance question using Gemini.
-    """
-
     def critique(self, plan_text, df):
         if df is None:
             return "No data available for risk analysis."
@@ -471,7 +439,6 @@ class CriticAgent:
 
 
 class ControllerAgent:
-    """Agent 5 – orchestrates the other agents via natural-language commands."""
     def process(self, command, df, analyzed_df):
         cmd = command.lower()
         if "analyze" in cmd:
