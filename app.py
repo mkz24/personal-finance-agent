@@ -37,7 +37,7 @@ with st.sidebar:
         st.warning("⚠️ Add your Gemini key to unlock the AI Critic.")
 
 # ---- Session state ----
-for key in ["df", "analyzed_df", "summary", "plan", "critique", "controller_output", "chat_history"]:
+for key in ["df", "analyzed_df", "summary", "plan", "critique", "chat_history"]:
     if key not in st.session_state:
         st.session_state[key] = None
 if st.session_state.chat_history is None:
@@ -520,7 +520,7 @@ if uploaded is not None:
     fetcher.fetch_data(uploaded)
 
 st.header("2️⃣ Run the Agents")
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     if st.button("🔍 Analyze", use_container_width=True):
@@ -545,14 +545,6 @@ with col3:
             )
 
 with col4:
-    st.markdown("**🤖 Controller**")
-    cmd_input = st.text_input("Type a command", placeholder="e.g. analyze, plan, critique",
-                              label_visibility="collapsed", key="cmd_input")
-    if st.button("▶ Run Command", use_container_width=True):
-        result = controller.process(cmd_input, st.session_state.df, st.session_state.analyzed_df)
-        st.session_state.controller_output = result
-
-with col5:
     if st.button("🔄 Reset", use_container_width=True):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
@@ -578,10 +570,6 @@ if st.session_state.plan:
 if st.session_state.critique:
     st.subheader("🧐 Critic Feedback")
     st.markdown(st.session_state.critique)
-
-if st.session_state.controller_output:
-    st.subheader("🤖 Controller Output")
-    st.markdown(st.session_state.controller_output)
 
 # ============================================================
 # AI CRITIC CHAT (Section 4)
