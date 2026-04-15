@@ -446,7 +446,7 @@ class CriticAgent:
         )
         try:
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-2.0-flash-lite")
             return model.generate_content(prompt).text
         except Exception as e:
             return f"Gemini error: {str(e)}"
