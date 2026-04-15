@@ -6,14 +6,12 @@ import io
 import os
 from dotenv import load_dotenv
 from difflib import get_close_matches
-import google.generativeai as genai
+from google import genai
 import fitz
 
 # ---- Load env ----
 load_dotenv()
 gemini_key = os.getenv("GEMINI_API_KEY", "")
-if gemini_key:
-    genai.configure(api_key=gemini_key)
 
 # ---- Page config ----
 st.set_page_config(
@@ -445,9 +443,12 @@ class CriticAgent:
             f"User's financial data: {ctx}\n\nUser question: {question}"
         )
         try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("gemini-2.5-flash")
-            return model.generate_content(prompt).text
+            client = genai.Client(api_key=api_key)
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+            return response.text
         except Exception as e:
             return f"Gemini error: {str(e)}"
 
