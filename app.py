@@ -416,7 +416,7 @@ class CriticAgent:
 
         try:
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("gemini-1.5-flash")
+            model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content(f"{system_prompt}\n\nUser question: {question}")
             return response.text
         except Exception as e:
@@ -544,7 +544,6 @@ if user_q:
 
     with st.chat_message("assistant"):
         with st.spinner("🧐 AI Critic is thinking..."):
-            # Fix: use proper None check instead of ambiguous 'or' on DataFrames
             active_df = st.session_state.analyzed_df if st.session_state.analyzed_df is not None else st.session_state.df
             answer = critic.ask_ai(user_q, active_df, gemini_key)
         st.markdown(answer)
