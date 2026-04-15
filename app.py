@@ -544,11 +544,9 @@ if user_q:
 
     with st.chat_message("assistant"):
         with st.spinner("🧐 AI Critic is thinking..."):
-            answer = critic.ask_ai(
-                user_q,
-                st.session_state.analyzed_df or st.session_state.df,
-                gemini_key
-            )
+            # Fix: use proper None check instead of ambiguous 'or' on DataFrames
+            active_df = st.session_state.analyzed_df if st.session_state.analyzed_df is not None else st.session_state.df
+            answer = critic.ask_ai(user_q, active_df, gemini_key)
         st.markdown(answer)
     st.session_state.chat_history.append({"role": "assistant", "content": answer})
 
