@@ -10,7 +10,7 @@ A smart multi-agent web app that reads your real bank statements (PDF or CSV) an
 | **AnalyzerAgent** | Computes income, expenses, and spending categories |
 | **PlannerAgent** | Generates a simple monthly/quarterly budget plan |
 | **CriticAgent** | AI-powered risk review + chat Q&A via Gemini |
-| **ControllerAgent** | Orchestrates all agents via natural-language commands |
+
 
 ##  Quick Start
 
