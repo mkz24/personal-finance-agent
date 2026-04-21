@@ -4,6 +4,7 @@ import pdfplumber
 import re
 import io
 import os
+import time
 from dotenv import load_dotenv
 from difflib import get_close_matches
 from google import genai
@@ -428,7 +429,7 @@ class CriticAgent:
             else:
                 income   = df.loc[df["Amount"] > 0, "Amount"].sum()
                 expenses = df.loc[df["Amount"] < 0, "Amount"].sum()
-            top_desc = (df[df["Amount"] < 0].nlargest(5,"Amount",keep="all")["Description"].tolist()
+            top_desc = (df[df["Amount"] < 0].nsmallest(5, "Amount")["Description"].tolist()
                         if "Description" in df.columns else [])
             ctx = (
                 f"Income: ${income:,.2f} | Expenses: ${abs(expenses):,.2f} | "
@@ -444,11 +445,28 @@ class CriticAgent:
         )
         try:
             client = genai.Client(api_key=api_key)
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt
-            )
-            return response.text
+            max_retries = 3
+            delay_seconds = 2
+            for attempt in range(max_retries):
+                try:
+                    response = client.models.generate_content(
+                        model="gemini-2.5-flash",
+                        contents=prompt
+                    )
+                    return response.text
+                except Exception as e:
+                    error_text = str(e)
+                    is_retryable = "503" in error_text or "UNAVAILABLE" in error_text or "high demand" in error_text.lower()
+                    if is_retryable and attempt < max_retries - 1:
+                        time.sleep(delay_seconds * (attempt + 1))
+                        continue
+                    if is_retryable:
+                        return (
+                            "Gemini is busy right now because the API is under heavy demand. "
+                            "Please try your question again in a few seconds. "
+                            "Your app is still working — this is a temporary Gemini server issue."
+                        )
+                    return f"Gemini error: {error_text}"
         except Exception as e:
             return f"Gemini error: {str(e)}"
 
